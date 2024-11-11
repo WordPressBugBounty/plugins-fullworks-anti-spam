@@ -2,7 +2,7 @@
 Contributors: Fullworks
 Tags: anti-spam, antispam, spam, comment, gdpr
 Tested up to: 6.7
-Stable tag: 2.3.7
+Stable tag: 2.3.10
 License: GPLv3 or later
 Requires PHP: 7.4
 Type: freemium
@@ -200,6 +200,16 @@ This free plugin does not collect, process or send any website visitor personal 
 Tested against PHP 8.3
 
 == Changelog ==
+= 2.3.10 =
+* Fix issue with reporting spam
+
+= 2.3.9 =
+* improve IP blocklist logic ( Pro Only )
+
+= 2.3.8 =
+* improve spam alert cron ( Pro Only )
+* fix Gravity Forms spam alerts ( Pro Only )
+
 = 2.3.7 =
 * update tested 6.7
 * upgrade freemius library

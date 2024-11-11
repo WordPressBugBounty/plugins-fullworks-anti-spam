@@ -1,4 +1,14 @@
 == Changelog ==
+= 2.3.10 =
+* Fix issue with reporting spam
+
+= 2.3.9 =
+* improve IP blocklist logic ( Pro Only )
+
+= 2.3.8 =
+* improve spam alert cron ( Pro Only )
+* fix Gravity Forms spam alerts ( Pro Only )
+
 = 2.3.7 =
 * update tested 6.7
 * upgrade freemius library
