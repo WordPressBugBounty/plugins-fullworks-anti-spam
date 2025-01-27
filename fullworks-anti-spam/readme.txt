@@ -2,7 +2,7 @@
 Contributors: Fullworks
 Tags: anti-spam, antispam, spam, comment, gdpr
 Tested up to: 6.7
-Stable tag: 2.3.11
+Stable tag: 2.3.12
 License: GPLv3 or later
 Requires PHP: 7.4
 Type: freemium

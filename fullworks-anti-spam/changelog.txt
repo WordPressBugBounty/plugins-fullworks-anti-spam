@@ -1,4 +1,7 @@
 == Changelog ==
+= 2.3.12 =
+* Update libraries
+
 = 2.3.11 =
 * Fix text domain warning introduced in  WordPress 6.7
 
