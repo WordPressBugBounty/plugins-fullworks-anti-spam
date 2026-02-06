@@ -247,7 +247,7 @@ class Utilities {
         $forms_registrations_obj = new Forms_Registrations();
         $this->forms_registrations = $forms_registrations_obj->get_registered_forms();
         /** @var \Freemius $fwantispam_fs Freemius global object. */
-        global $fwantispam_fs;
+        global $fwas_fs;
         global $wpdb;
         $table_name = $wpdb->prefix . 'fwantispam_log';
         $counts = $wpdb->get_results( "SELECT eventcode_str, count(*) AS count from {$table_name}  GROUP BY eventcode_str" );
@@ -289,6 +289,15 @@ class Utilities {
     }
 
     public function debug_log( $data ) {
+        // Save original data for action hook (before any string conversion)
+        $original_data = $data;
+        // Allow other plugins to intercept the debug function
+        $debug_function = apply_filters( 'fwas_diagnostics_log_function', '' );
+        if ( !empty( $debug_function ) && function_exists( $debug_function ) ) {
+            // Call the custom debug function provided by the filter
+            call_user_func( $debug_function, $data );
+        }
+        // Default debug behavior
         if ( defined( 'WP_DEBUG' ) && WP_DEBUG && defined( 'FWAS_DEBUG' ) && FWAS_DEBUG ) {
             if ( is_array( $data ) ) {
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r -- is a debug function
@@ -297,6 +306,8 @@ class Utilities {
             // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- is a debug function
             error_log( '[' . gmdate( 'Y-m-d H:i:s' ) . '] Fullworks Anti Spam: ' . $data );
         }
+        // Fire an action for plugins to hook into (use original data, not string-converted version)
+        do_action( 'fwas_diagnostics_log', $original_data );
     }
 
     public function is_gravity_forms_installed() {
@@ -358,6 +369,10 @@ class Utilities {
 
     public function is_ws_form_installed() {
         return apply_filters( 'fwas_is_ws_form_installed', defined( 'WS_FORM_NAME' ) );
+    }
+
+    public function is_sureforms_installed() {
+        return apply_filters( 'fwas_is_sureforms_installed', defined( 'SRFM_VER' ) );
     }
 
     public function is_comments_open() {

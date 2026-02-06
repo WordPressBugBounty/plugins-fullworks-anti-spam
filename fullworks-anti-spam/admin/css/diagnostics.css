@@ -1,0 +1,854 @@
+/**
+ * Diagnostics Admin Styles
+ *
+ * @package Fullworks_Anti_Spam
+ */
+
+.fwas-diagnostics-container {
+	max-width: 1400px;
+	margin: 20px 0;
+}
+
+.fwas-debug-controls {
+	background: #fff;
+	padding: 15px;
+	border: 1px solid #ccd0d4;
+	margin-bottom: 20px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 15px;
+}
+
+.fwas-debug-filters {
+	display: flex;
+	gap: 15px;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.fwas-debug-filters label {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.fwas-debug-filters select,
+.fwas-debug-filters input[type="text"] {
+	min-width: 150px;
+}
+
+.fwas-debug-actions {
+	display: flex;
+	gap: 10px;
+}
+
+.fwas-remote-access-info {
+	background: #fff;
+	padding: 15px;
+	border: 1px solid #ccd0d4;
+	margin-bottom: 20px;
+}
+
+.fwas-access-url {
+	display: flex;
+	gap: 10px;
+	margin: 10px 0;
+	align-items: center;
+}
+
+.fwas-access-url input[type="text"] {
+	flex: 1;
+	font-family: monospace;
+	font-size: 12px;
+}
+
+#fwas-logs-container {
+	background: #fff;
+	border: 1px solid #ccd0d4;
+	min-height: 200px;
+}
+
+#fwas-logs-loading {
+	padding: 40px;
+	text-align: center;
+	color: #666;
+}
+
+#fwas-logs-table {
+	width: 100%;
+}
+
+#fwas-logs-table th,
+#fwas-logs-table td {
+	padding: 10px;
+	text-align: left;
+}
+
+#fwas-logs-table .column-time {
+	width: 150px;
+	white-space: nowrap;
+}
+
+#fwas-logs-table .column-level {
+	width: 80px;
+}
+
+#fwas-logs-table .column-message {
+	min-width: 300px;
+	word-break: break-word;
+}
+
+#fwas-logs-table .column-source {
+	width: 150px;
+	font-family: monospace;
+	font-size: 11px;
+}
+
+#fwas-logs-table .column-ip {
+	width: 120px;
+}
+
+#fwas-logs-table .column-user {
+	width: 100px;
+}
+
+#fwas-logs-table tr.log-level-error {
+	background-color: #ffebe8;
+}
+
+#fwas-logs-table tr.log-level-warning {
+	background-color: #fff8e5;
+}
+
+#fwas-logs-table tr.log-level-info {
+	background-color: #e5f5ff;
+}
+
+#fwas-no-logs {
+	padding: 40px;
+	text-align: center;
+	color: #666;
+}
+
+.fwas-pagination {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 15px;
+	padding: 15px;
+	background: #fff;
+	border: 1px solid #ccd0d4;
+	border-top: none;
+}
+
+#fwas-page-info {
+	color: #666;
+	font-size: 13px;
+}
+
+/* Responsive */
+@media (max-width: 782px) {
+	.fwas-debug-controls {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.fwas-debug-filters {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.fwas-debug-filters label {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.fwas-debug-filters select,
+	.fwas-debug-filters input[type="text"] {
+		width: 100%;
+	}
+
+	.fwas-debug-actions {
+		flex-direction: column;
+	}
+
+	.fwas-access-url {
+		flex-direction: column;
+	}
+
+	.fwas-access-url input[type="text"] {
+		width: 100%;
+	}
+
+	#fwas-logs-table .column-message {
+		min-width: 200px;
+	}
+}
+
+/* Report Section Styles */
+.fwas-report-section {
+	background: #fff;
+	padding: 20px;
+	border: 1px solid #ccd0d4;
+	margin-bottom: 20px;
+}
+
+.fwas-report-section h3 {
+	margin-top: 0;
+	border-bottom: 2px solid #2271b1;
+	padding-bottom: 10px;
+	color: #2271b1;
+}
+
+.fwas-report-controls {
+	display: flex;
+	gap: 15px;
+	align-items: center;
+	margin-bottom: 15px;
+	flex-wrap: wrap;
+}
+
+.fwas-report-controls label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+#fwas-report-container {
+	margin-top: 20px;
+}
+
+.fwas-report {
+	background: #f9f9f9;
+	padding: 20px;
+	border-radius: 4px;
+}
+
+.fwas-report .fwas-report-section {
+	background: #fff;
+	padding: 20px;
+	margin-bottom: 20px;
+	border-left: 4px solid #2271b1;
+}
+
+.fwas-report h4 {
+	margin-top: 0;
+	color: #2271b1;
+	font-size: 18px;
+	border-bottom: 1px solid #ddd;
+	padding-bottom: 8px;
+	margin-bottom: 15px;
+}
+
+.fwas-report h5 {
+	margin-top: 15px;
+	margin-bottom: 10px;
+	color: #50575e;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.fwas-stats-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 15px;
+	margin-bottom: 15px;
+}
+
+.fwas-stat {
+	background: #f0f0f1;
+	padding: 12px 15px;
+	border-radius: 4px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.fwas-stat .label {
+	font-weight: 600;
+	color: #50575e;
+	font-size: 13px;
+}
+
+.fwas-stat .value {
+	font-size: 20px;
+	font-weight: bold;
+	color: #2271b1;
+}
+
+.fwas-stat .value.fwas-spam {
+	color: #d63638;
+}
+
+.fwas-stat .value.fwas-legitimate {
+	color: #00a32a;
+}
+
+.fwas-report table {
+	width: 100%;
+	margin-top: 10px;
+	border-collapse: collapse;
+}
+
+.fwas-report table th {
+	background: #f0f0f1;
+	padding: 10px;
+	text-align: left;
+	font-weight: 600;
+	border-bottom: 2px solid #ccd0d4;
+}
+
+.fwas-report table td {
+	padding: 8px 10px;
+	border-bottom: 1px solid #ddd;
+}
+
+.fwas-report table tr:hover {
+	background: #f9f9f9;
+}
+
+.fwas-report ul {
+	margin: 10px 0;
+	padding-left: 20px;
+}
+
+.fwas-report ul li {
+	margin-bottom: 8px;
+	line-height: 1.5;
+}
+
+.fwas-issues {
+	border-left-color: #d63638;
+}
+
+.fwas-issues ul li {
+	padding: 10px;
+	margin-bottom: 10px;
+	background: #fff8e5;
+	border-left: 3px solid #d63638;
+	border-radius: 3px;
+}
+
+.fwas-issues li.fwas-severity-high {
+	background: #ffebe8;
+	border-left-color: #d63638;
+}
+
+.fwas-issues li.fwas-severity-medium {
+	background: #fff8e5;
+	border-left-color: #dba617;
+}
+
+.fwas-issues li.fwas-severity-warning {
+	background: #e5f5ff;
+	border-left-color: #2271b1;
+}
+
+.fwas-recommendations {
+	border-left-color: #00a32a;
+}
+
+.fwas-recommendations ul li {
+	padding: 10px;
+	margin-bottom: 10px;
+	background: #edfaef;
+	border-left: 3px solid #00a32a;
+	border-radius: 3px;
+}
+
+.fwas-recommendations li.fwas-priority-high {
+	background: #ffebe8;
+	border-left-color: #d63638;
+}
+
+.fwas-recommendations li.fwas-priority-medium {
+	background: #fff8e5;
+	border-left-color: #dba617;
+}
+
+@media (max-width: 782px) {
+	.fwas-report-controls {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.fwas-report-controls label {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.fwas-stats-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.fwas-report table {
+		font-size: 12px;
+	}
+
+	.fwas-report table th,
+	.fwas-report table td {
+		padding: 6px;
+	}
+}
+
+/* Remote Server Check Styles */
+.fwas-remote-server-check {
+	background: #fff;
+	padding: 15px;
+	border: 1px solid #ccd0d4;
+	margin-bottom: 20px;
+}
+
+/* Custom URL Diagnostics Styles */
+.fwas-custom-url-check {
+	background: #fef9e7;
+	padding: 15px;
+	border: 1px solid #f9e79f;
+	border-left: 4px solid #f39c12;
+	border-radius: 4px;
+	margin-top: 15px;
+}
+
+.fwas-custom-url-check h4 {
+	color: #9c6500;
+	font-size: 14px;
+	font-weight: 600;
+	margin: 0 0 8px 0;
+}
+
+.fwas-custom-url-check p.description {
+	color: #7c6100;
+	font-size: 13px;
+	margin: 0 0 12px 0;
+}
+
+.fwas-custom-url-controls {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.fwas-custom-url-controls input[type="url"] {
+	flex: 1;
+	min-width: 300px;
+	padding: 6px 10px;
+	border: 1px solid #c3a847;
+	border-radius: 4px;
+	font-family: monospace;
+	font-size: 13px;
+	background: #fff;
+}
+
+.fwas-custom-url-controls input[type="url"]:focus {
+	border-color: #f39c12;
+	outline: none;
+	box-shadow: 0 0 0 1px #f39c12;
+}
+
+/* Responsive styles for custom URL check */
+@media (max-width: 782px) {
+	.fwas-custom-url-controls {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.fwas-custom-url-controls input[type="url"] {
+		width: 100%;
+		min-width: auto;
+	}
+}
+
+/* Training Data Management Styles */
+.fwas-training-data-management {
+	background: #fff;
+	padding: 20px;
+	border: 1px solid #ccd0d4;
+	margin-bottom: 20px;
+	box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.fwas-training-data-management h3 {
+	margin-top: 0;
+	margin-bottom: 15px;
+	color: #23282d;
+	font-size: 18px;
+	font-weight: 600;
+}
+
+.fwas-training-data-management > p {
+	margin: 0 0 20px 0;
+	color: #646970;
+}
+
+.fwas-training-export {
+	padding: 20px;
+	background: #f0f6fc;
+	border: 1px solid #c3e6cb;
+	border-left: 4px solid #28a745;
+	border-radius: 4px;
+	margin-bottom: 20px;
+}
+
+.fwas-training-export h4 {
+	color: #155724;
+	font-size: 15px;
+	font-weight: 600;
+	margin: 0 0 15px 0;
+}
+
+.fwas-training-import {
+	padding: 20px;
+	background: #f8f9fa;
+	border: 1px solid #c3d7ef;
+	border-left: 4px solid #2271b1;
+	border-radius: 4px;
+}
+
+.fwas-training-import h4 {
+	color: #135e96;
+	font-size: 15px;
+	font-weight: 600;
+	margin: 0 0 15px 0;
+}
+
+.fwas-import-controls p {
+	margin: 15px 0 10px 0;
+}
+
+.fwas-import-controls p:first-child {
+	margin-top: 0;
+}
+
+.fwas-import-controls label {
+	display: block;
+	margin: 8px 0;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+.fwas-import-controls input[type="file"] {
+	display: block;
+	margin-top: 8px;
+	padding: 6px;
+	border: 1px solid #8c8f94;
+	border-radius: 4px;
+	background: #fff;
+}
+
+.fwas-import-controls input[type="radio"] {
+	margin-right: 8px;
+	vertical-align: middle;
+}
+
+.fwas-import-controls strong {
+	display: block;
+	margin-bottom: 8px;
+	color: #1d2327;
+}
+
+.fwas-import-controls .button {
+	margin-top: 15px;
+}
+
+#fwas-training-import-result {
+	margin-top: 20px;
+	padding: 15px;
+	background: #fff;
+	border-radius: 4px;
+	border: 1px solid #c3e6cb;
+	border-left: 4px solid #28a745;
+}
+
+#fwas-training-import-result h4 {
+	margin-top: 0;
+	color: #155724;
+}
+
+#fwas-training-import-result .notice {
+	margin: 0;
+	padding: 0;
+	border: none;
+}
+
+.fwas-import-errors {
+	max-height: 200px;
+	overflow-y: auto;
+	background: #fff3cd;
+	padding: 12px;
+	border: 1px solid #ffc107;
+	border-left: 4px solid #d63638;
+	border-radius: 3px;
+	font-size: 13px;
+	margin-top: 15px;
+}
+
+.fwas-import-errors ul {
+	margin: 0;
+	padding-left: 20px;
+}
+
+.fwas-import-errors li {
+	margin-bottom: 5px;
+	color: #721c24;
+}
+
+@media (max-width: 782px) {
+	.fwas-training-data-management {
+		padding: 15px;
+	}
+
+	.fwas-training-export,
+	.fwas-training-import {
+		padding: 15px;
+	}
+}
+
+.fwas-server-check-results {
+	margin-top: 20px;
+}
+
+/* Status Badge */
+.fwas-status-section {
+	background: #f9f9f9;
+	padding: 20px;
+	border-radius: 4px;
+	margin-bottom: 20px;
+	text-align: center;
+}
+
+.fwas-status-badge {
+	display: inline-block;
+	font-size: 18px;
+	font-weight: bold;
+	padding: 15px 30px;
+	border-radius: 6px;
+	margin-bottom: 15px;
+}
+
+.fwas-status-badge.fwas-status-success {
+	background: #d4edda;
+	color: #155724;
+	border: 2px solid #28a745;
+}
+
+.fwas-status-badge.fwas-status-warning {
+	background: #fff3cd;
+	color: #856404;
+	border: 2px solid #ffc107;
+}
+
+.fwas-status-badge.fwas-status-error {
+	background: #f8d7da;
+	color: #721c24;
+	border: 2px solid #dc3545;
+}
+
+.fwas-status-meta {
+	display: flex;
+	gap: 20px;
+	justify-content: center;
+	flex-wrap: wrap;
+	font-size: 13px;
+	color: #666;
+}
+
+/* Technical Sections */
+.fwas-tech-section {
+	background: #fff;
+	padding: 20px;
+	border: 1px solid #ccd0d4;
+	margin-bottom: 20px;
+	border-radius: 4px;
+}
+
+.fwas-tech-section h4 {
+	margin-top: 0;
+	margin-bottom: 15px;
+	color: #2271b1;
+	font-size: 16px;
+	border-bottom: 2px solid #2271b1;
+	padding-bottom: 8px;
+}
+
+.fwas-tech-details {
+	background: #f9f9f9;
+	padding: 15px;
+	border-radius: 4px;
+}
+
+.fwas-tech-row {
+	display: flex;
+	padding: 8px 0;
+	border-bottom: 1px solid #e0e0e0;
+}
+
+.fwas-tech-row:last-child {
+	border-bottom: none;
+}
+
+.fwas-tech-label {
+	font-weight: 600;
+	color: #50575e;
+	min-width: 150px;
+	flex-shrink: 0;
+}
+
+.fwas-tech-value {
+	color: #2c3338;
+	font-family: monospace;
+	font-size: 13px;
+	word-break: break-all;
+}
+
+.fwas-tech-value.fwas-ip {
+	color: #2271b1;
+	font-weight: bold;
+	background: #e5f5ff;
+	padding: 2px 8px;
+	border-radius: 3px;
+}
+
+.fwas-tech-value.fwas-check-ok {
+	color: #00a32a;
+	font-weight: bold;
+}
+
+.fwas-tech-value.fwas-check-fail {
+	color: #d63638;
+	font-weight: bold;
+}
+
+/* Error Section */
+.fwas-error-section {
+	border-left: 4px solid #d63638;
+}
+
+.fwas-error-box {
+	background: #ffebe8;
+	border: 1px solid #d63638;
+	border-radius: 4px;
+	padding: 15px;
+	margin-bottom: 15px;
+}
+
+.fwas-error-type {
+	font-size: 16px;
+	font-weight: bold;
+	color: #721c24;
+	margin-bottom: 10px;
+}
+
+.fwas-error-message {
+	color: #721c24;
+	margin-bottom: 10px;
+	font-family: monospace;
+	font-size: 13px;
+}
+
+.fwas-error-guidance {
+	background: #fff;
+	padding: 10px;
+	border-left: 3px solid #d63638;
+	border-radius: 3px;
+	color: #2c3338;
+}
+
+/* Code Blocks */
+.fwas-code-block {
+	background: #2c3338;
+	color: #f0f0f1;
+	padding: 15px;
+	border-radius: 4px;
+	overflow-x: auto;
+	font-family: 'Courier New', monospace;
+	font-size: 12px;
+	line-height: 1.5;
+	margin: 10px 0;
+}
+
+/* Expandable Details */
+.fwas-tech-details-expandable {
+	margin-top: 15px;
+	border: 1px solid #ccd0d4;
+	border-radius: 4px;
+	padding: 10px;
+	background: #f9f9f9;
+}
+
+.fwas-tech-details-expandable summary {
+	cursor: pointer;
+	font-weight: 600;
+	color: #2271b1;
+	padding: 5px;
+	user-select: none;
+}
+
+.fwas-tech-details-expandable summary:hover {
+	color: #135e96;
+}
+
+.fwas-tech-details-expandable[open] summary {
+	margin-bottom: 10px;
+	border-bottom: 1px solid #ccd0d4;
+}
+
+/* Curl Command */
+.fwas-curl-command {
+	display: flex;
+	gap: 10px;
+	align-items: flex-start;
+	background: #f9f9f9;
+	padding: 10px;
+	border: 1px solid #ccd0d4;
+	border-radius: 4px;
+	margin: 10px 0;
+}
+
+.fwas-curl-command code {
+	flex: 1;
+	display: block;
+	background: #2c3338;
+	color: #f0f0f1;
+	padding: 10px;
+	border-radius: 3px;
+	font-family: 'Courier New', monospace;
+	font-size: 12px;
+	overflow-x: auto;
+	word-break: break-all;
+	white-space: pre-wrap;
+}
+
+.fwas-copy-curl,
+.fwas-copy-diagnostics {
+	margin-top: 10px;
+}
+
+/* Responsive */
+@media (max-width: 782px) {
+	.fwas-status-meta {
+		flex-direction: column;
+		align-items: center;
+		gap: 10px;
+	}
+
+	.fwas-tech-row {
+		flex-direction: column;
+	}
+
+	.fwas-tech-label {
+		min-width: auto;
+		margin-bottom: 5px;
+	}
+
+	.fwas-curl-command {
+		flex-direction: column;
+	}
+
+	.fwas-status-badge {
+		font-size: 16px;
+		padding: 12px 20px;
+	}
+}

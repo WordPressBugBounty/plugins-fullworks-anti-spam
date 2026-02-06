@@ -40,6 +40,7 @@ use Fullworks_Anti_Spam\Core\Training_Data;
 use Fullworks_Anti_Spam\Core\Utilities;
 use Fullworks_Anti_Spam\Data\Log;
 use Fullworks_Anti_Spam\FrontEnd\FrontEnd;
+use Fullworks_Anti_Spam\Integrations\WS_Form\WS_Form_Action_Fullworks_Anti_Spam;
 /**
  * Class Core
  * @package Fullworks_Anti_Spam\Control
@@ -97,7 +98,6 @@ class Core {
         $this->api = new Anti_Spam_Api();
         $this->options = get_option( 'fullworks-anti-spam' );
         $this->set_options_data();
-        add_action( 'init', array($this, 'set_locale') );
         $this->settings_pages();
         $this->define_admin_hooks();
         $this->define_public_hooks();
@@ -127,6 +127,11 @@ class Core {
                 }
                 update_option( 'fullworks-anti-spam', $this->options );
             }
+            // Dashboard widget default for upgrades
+            if ( !isset( $this->options['show_dashboard_widget'] ) ) {
+                $this->options['show_dashboard_widget'] = 1;
+                update_option( 'fullworks-anti-spam', $this->options );
+            }
         }
         if ( !wp_next_scheduled( 'fullworks_anti_spam_daily_admin' ) ) {
             wp_schedule_event( time() - 30, 'daily', 'fullworks_anti_spam_daily_admin' );
@@ -134,13 +139,6 @@ class Core {
         if ( !wp_next_scheduled( 'fullworks_anti_spam_daily_training' ) ) {
             wp_schedule_event( time() - 30, 'daily', 'fullworks_anti_spam_daily_training' );
         }
-    }
-
-    /**
-     *
-     */
-    public function set_locale() {
-        load_plugin_textdomain( 'fullworks-anti-spam', false, basename( FULLWORKS_ANTI_SPAM_PLUGIN_DIR ) . '/languages/' );
     }
 
     /**
@@ -165,6 +163,9 @@ class Core {
             3
         );
         add_action( 'admin_menu', array($allow_deny, 'add_table_page') );
+        add_action( 'init', function () {
+        } );
+        // Diagnostics Admin
         add_action( 'init', function () {
         } );
     }

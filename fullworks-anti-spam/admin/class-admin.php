@@ -87,6 +87,11 @@ class Admin {
         add_action( 'admin_menu', array($this, 'admin_pages') );
         add_action( 'admin_post_fwas_ad_csv_import', array($this, 'handle_ad_csv_import') );
         add_action( 'admin_post_fwas_ad_csv_export', array($this, 'handle_ad_csv_export') );
+        // Register AJAX handler for dismissible notices
+        add_action( 'wp_ajax_fwas_dismiss_upgrade_notice', array($this, 'handle_dismiss_upgrade_notice') );
+        // Register dashboard widget
+        $dashboard_widget = new Admin_Dashboard_Widget($this->freemius, $this->utilities, $this->api);
+        add_action( 'wp_dashboard_setup', array($dashboard_widget, 'register_widget') );
     }
 
     public function admin_pages() {
@@ -101,36 +106,52 @@ class Admin {
         }
         global $wpdb;
         $table_name = $wpdb->prefix . 'fwantispam_allow_deny';
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_name is safe, using prefix + constant
         $results = $wpdb->get_results( "SELECT allow_deny,type,value,notes FROM {$table_name}", ARRAY_A );
         if ( count( $results ) > 0 ) {
             $delimiter = ",";
             $enclosure = '"';
-            $filename = "fwas_allow_deny_" . date( 'Y-m-d' ) . ".csv";
-            // create a file pointer
-            $f = fopen( 'php://memory', 'w' );
-            // set column headers
+            $filename = "fwas_allow_deny_" . gmdate( 'Y-m-d' ) . ".csv";
+            // Build CSV rows array
+            $csv_rows = array();
+            // Add column headers
             $fields = array_keys( $results[0] );
-            fputcsv(
-                $f,
-                $fields,
-                $delimiter,
-                $enclosure
-            );
-            // output each row of the data, format line as csv and write to file pointer
+            $csv_rows[] = $this->array_to_csv_line( $fields, $delimiter, $enclosure );
+            // Add data rows
             foreach ( $results as $row ) {
-                $lineData = array_values( $row );
-                fputcsv(
-                    $f,
-                    $lineData,
-                    $delimiter,
-                    $enclosure
-                );
+                $csv_rows[] = $this->array_to_csv_line( array_values( $row ), $delimiter, $enclosure );
             }
-            fseek( $f, 0 );
+            // Combine into CSV content
+            $csv_content = implode( "\n", $csv_rows );
+            // Send headers and output
             header( 'Content-Type: text/csv' );
             header( 'Content-Disposition: attachment; filename="' . $filename . '";' );
-            fpassthru( $f );
+            echo $csv_content;
+            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV data already sanitized from database
+            exit;
         }
+    }
+
+    /**
+     * Convert array to CSV line
+     *
+     * @param array  $data      Data array.
+     * @param string $delimiter Delimiter character.
+     * @param string $enclosure Enclosure character.
+     * @return string CSV line.
+     */
+    private function array_to_csv_line( $data, $delimiter = ',', $enclosure = '"' ) {
+        $line = array();
+        foreach ( $data as $field ) {
+            // Escape enclosure characters and wrap in enclosures if needed
+            if ( strpos( $field, $enclosure ) !== false || strpos( $field, $delimiter ) !== false || strpos( $field, "\n" ) !== false ) {
+                $field = $enclosure . str_replace( $enclosure, $enclosure . $enclosure, $field ) . $enclosure;
+            } else {
+                $field = $enclosure . $field . $enclosure;
+            }
+            $line[] = $field;
+        }
+        return implode( $delimiter, $line );
     }
 
     public function handle_ad_csv_import() {
@@ -319,6 +340,26 @@ class Admin {
         if ( $current_screen->id == "admin_page_fullworks-anti-spam-settings-allow-deny-settings" ) {
             wp_enqueue_script( 'thickbox' );
         }
+    }
+
+    /**
+     * Handle AJAX request to dismiss upgrade notice
+     */
+    public function handle_dismiss_upgrade_notice() {
+        // Verify nonce
+        check_ajax_referer( 'fwantispam_ajax_nonce', 'nonce' );
+        // Check user capability
+        if ( !current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array(
+                'message' => __( 'Permission denied', 'fullworks-anti-spam' ),
+            ) );
+        }
+        // Save user meta to remember dismissal
+        $user_id = get_current_user_id();
+        update_user_meta( $user_id, 'fwas_upgrade_notice_dismissed', true );
+        wp_send_json_success( array(
+            'message' => __( 'Notice dismissed', 'fullworks-anti-spam' ),
+        ) );
     }
 
 }

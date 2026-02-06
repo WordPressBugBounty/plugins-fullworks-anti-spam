@@ -33,6 +33,7 @@ namespace Fullworks_Anti_Spam\Admin;
 
 use ActionScheduler_Store;
 use Fullworks_Anti_Spam\Anti_Spam_Api;
+use Fullworks_Anti_Spam\Core\Forms_Registrations;
 use Fullworks_Anti_Spam\Core\Utilities;
 class Admin_Settings extends Admin_Pages {
     protected $settings_page;
@@ -45,6 +46,8 @@ class Admin_Settings extends Admin_Pages {
     protected $utilities;
 
     protected $options;
+
+    protected $show_upgrade_notice = false;
 
     private $titles;
 
@@ -70,6 +73,225 @@ class Admin_Settings extends Admin_Pages {
         $this->freemius = $freemius;
         $this->utilities = $utilities;
         $this->api = $api;
+        $this->options = get_option( 'fullworks-anti-spam' );
+        parent::__construct();
+    }
+
+    /**
+     * Get settings title with lazy initialization to avoid early translation loading
+     *
+     * @return string
+     */
+    protected function get_settings_title() {
+        if ( null === $this->settings_title ) {
+            $this->settings_title = '<img src="' . dirname( plugin_dir_url( __FILE__ ) ) . '/admin/images/brand/light-anti-spam-75h.svg" class="logo" alt="Fullworks Logo"/><div class="text">' . __( 'Anti Spam Settings', 'fullworks-anti-spam' ) . '</div>';
+        }
+        return $this->settings_title;
+    }
+
+    /**
+     * Override parent settings_page to add upgrade notice and initialize settings_title
+     */
+    public function settings_page() {
+        // Initialize settings title before rendering
+        $this->settings_title = $this->get_settings_title();
+        // Check if we should render the upgrade notice
+        $show_upgrade_notice = false;
+        if ( !$this->freemius->can_use_premium_code() ) {
+            $user_id = get_current_user_id();
+            $dismissed = get_user_meta( $user_id, 'fwas_upgrade_notice_dismissed', true );
+            if ( !$dismissed ) {
+                $show_upgrade_notice = true;
+            }
+        }
+        // Store flag for use in render method
+        $this->show_upgrade_notice = $show_upgrade_notice;
+        /* global vars */
+        global $hook_suffix;
+        if ( $this->settings_page_id === $hook_suffix ) {
+            /* enable add_meta_boxes function in this page. */
+            do_action( $this->settings_page_id . '_settings_page_boxes', $hook_suffix );
+            ?>
+
+            <div class="wrap fs-page">
+
+                <h2 class="brand"><?php 
+            echo wp_kses_post( $this->settings_title );
+            ?></h2>
+
+                <div class="fs-settings-meta-box-wrap">
+					<?php 
+            $this->display_tabs();
+            ?>
+
+					<?php 
+            $this->render_upgrade_notice();
+            ?>
+
+                    <form id="fs-smb-form" method="post" action="options.php">
+
+						<?php 
+            settings_fields( $this->option_group );
+            // options group
+            ?>
+						<?php 
+            wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false );
+            ?>
+						<?php 
+            wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false );
+            ?>
+
+
+                        <div id="poststuff">
+
+                            <div id="post-body"
+                                 class="metabox-holder columns-<?php 
+            echo ( 1 == get_current_screen()->get_columns() ? '1' : '2' );
+            ?>">
+
+                                <div id="postbox-container-1" class="postbox-container">
+
+									<?php 
+            do_meta_boxes( $hook_suffix, 'side', null );
+            ?>
+                                    <!-- #side-sortables -->
+
+                                </div><!-- #postbox-container-1 -->
+
+                                <div id="postbox-container-2" class="postbox-container">
+
+									<?php 
+            $this->do_promo_box();
+            ?>
+
+
+									<?php 
+            do_meta_boxes( $hook_suffix, 'normal', null );
+            ?>
+                                    <!-- #normal-sortables -->
+
+									<?php 
+            do_meta_boxes( $hook_suffix, 'advanced', null );
+            ?>
+                                    <!-- #advanced-sortables -->
+
+                                </div><!-- #postbox-container-2 -->
+
+                            </div><!-- #post-body -->
+
+                            <br class="clear">
+
+                        </div><!-- #poststuff -->
+
+                    </form>
+
+                </div><!-- .fs-settings-meta-box-wrap -->
+
+            </div><!-- .wrap -->
+			<?php 
+        }
+    }
+
+    /**
+     * Render upgrade notice with protection summary (compact version)
+     */
+    public function render_upgrade_notice() {
+        if ( empty( $this->show_upgrade_notice ) ) {
+            return;
+        }
+        // Get installed forms count
+        $installed_forms = Forms_Registrations::get_registered_forms();
+        $total_installed = count( $installed_forms );
+        // Includes comments
+        // Count protected forms (comments + forms with protection_level = 1)
+        $free_protected_count = 1;
+        // Comments always protected
+        foreach ( $installed_forms as $form_key => $form_data ) {
+            if ( $form_key === 'comments' ) {
+                continue;
+            }
+            if ( isset( $form_data['protection_level'] ) && $form_data['protection_level'] === 1 ) {
+                $free_protected_count++;
+            }
+        }
+        $has_unprotected = $free_protected_count < $total_installed;
+        ?>
+		<div class="fwas-upgrade-notice">
+			<button type="button" class="notice-dismiss"></button>
+			<h3><?php 
+        esc_html_e( 'Unlock Full Protection', 'fullworks-anti-spam' );
+        ?></h3>
+
+			<?php 
+        if ( $has_unprotected ) {
+            ?>
+				<p class="fwas-protection-summary">
+					<?php 
+            /* translators: %1$d: number of protected forms, %2$d: total forms */
+            printf( esc_html__( '%1$d of %2$d systems fully protected', 'fullworks-anti-spam' ), (int) $free_protected_count, (int) $total_installed );
+            ?>
+					<strong><?php 
+            esc_html_e( ' — Missing: AI spam detection & IP blocklist', 'fullworks-anti-spam' );
+            ?></strong>
+				</p>
+			<?php 
+        }
+        ?>
+
+			<p class="fwas-upgrade-benefits">
+				<?php 
+        esc_html_e( 'Stop manual spammers with AI • Block 10M+ spam IPs • Protect all forms • Email reports', 'fullworks-anti-spam' );
+        ?>
+			</p>
+
+			<a href="<?php 
+        echo esc_url( $this->freemius->get_trial_url() );
+        ?>" class="fwas-trial-cta">
+				<?php 
+        esc_html_e( 'Start 7-Day FREE Trial', 'fullworks-anti-spam' );
+        ?>
+			</a>
+			<span class="fwas-trial-details">
+				<?php 
+        esc_html_e( 'No credit card • Cancel anytime', 'fullworks-anti-spam' );
+        ?>
+			</span>
+		</div>
+		<?php 
+    }
+
+    public static function option_defaults( $option ) {
+        /** @var \Freemius $fwantispam_fs Freemius global object. */
+        global $fwas_fs;
+        switch ( $option ) {
+            case 'fullworks-anti-spam':
+                $res = array(
+                    'comments'              => 1,
+                    'days'                  => 30,
+                    'freemius_state_set'    => false,
+                    'show_dashboard_widget' => 1,
+                );
+                if ( !$fwas_fs->is_anonymous() && !$fwas_fs->is_plan_or_trial( 'gdpr', true ) ) {
+                    $res['sendspam'] = 1;
+                } else {
+                    $res['sendspam'] = 0;
+                }
+                return $res;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Get titles array with lazy initialization.
+     * This ensures translations are only loaded when needed (after init hook).
+     *
+     * @return array
+     */
+    private function get_titles() {
+        if ( null !== $this->titles ) {
+            return $this->titles;
+        }
         $this->titles = array(
             'Bot Comments' => array(
                 'title' => esc_html__( 'Comments', 'fullworks-anti-spam' ),
@@ -111,11 +333,11 @@ class Admin_Settings extends Admin_Pages {
         );
         $this->titles['Spam Score'] = array(
             'title' => esc_html__( 'Statistical Analysis', 'fullworks-anti-spam' ) . '&nbsp;<sup>(1)</sup>',
-            'tip'   => esc_html__( 'Set the desired spam probability filter %%, default is 55%%, a lower %% will exclude more messages and may include genuine messages, a higher %% will allow more messages through so may let through more spam', 'fullworks-anti-spam' ),
+            'tip'   => esc_html__( 'Set the desired spam probability filter percentage, default is 55 percent, a lower percentage will exclude more messages and may include genuine messages, a higher percentage will allow more messages through so may let through more spam', 'fullworks-anti-spam' ),
         );
         $this->titles['AI'] = array(
             'title' => esc_html__( 'Artificial Intelligence', 'fullworks-anti-spam' ) . '&nbsp;<sup>(2)</sup>',
-            'tip'   => esc_html__( 'Using natural language AI learning server will make an intelligent guess at a %% as to whether user input is likely to be spam, please note as this uses thord party AI servers, the message submission may be delayed by as much as 3 seconds while the service responds, if this concerns you set this to zero to not use.', 'fullworks-anti-spam' ),
+            'tip'   => esc_html__( 'Using natural language AI learning server will provide a probability score as to whether user input is likely to be spam, please note as this uses third party AI servers, the message submission may be delayed by as much as 3 seconds while the service responds, if this concerns you set this to zero to not use.', 'fullworks-anti-spam' ),
         );
         $this->titles['Strategy'] = array(
             'title' => esc_html__( 'Strategy', 'fullworks-anti-spam' ),
@@ -143,30 +365,11 @@ class Admin_Settings extends Admin_Pages {
             'title' => esc_html__( 'Spam to Email', 'fullworks-anti-spam' ),
             'tip'   => esc_html__( 'Some forms we can\'t stop email being sent even when we detect spam so to handle this you can set up a different email address so you can direct to spam folders. Leaving blank will send the email to whatever is set up in the forms with a modified subject lime.', 'fullworks-anti-spam' ),
         );
-        $this->options = get_option( 'fullworks-anti-spam' );
-        $this->settings_title = '<img src="' . dirname( plugin_dir_url( __FILE__ ) ) . '/admin/images/brand/light-anti-spam-75h.svg" class="logo" alt="Fullworks Logo"/><div class="text">' . __( 'Anti Spam Settings', 'fullworks-anti-spam' ) . '</div>';
-        parent::__construct();
-    }
-
-    public static function option_defaults( $option ) {
-        /** @var \Freemius $fwantispam_fs Freemius global object. */
-        global $fwantispam_fs;
-        switch ( $option ) {
-            case 'fullworks-anti-spam':
-                $res = array(
-                    'comments'           => 1,
-                    'days'               => 30,
-                    'freemius_state_set' => false,
-                );
-                if ( !$fwantispam_fs->is_anonymous() && !$fwantispam_fs->is_plan_or_trial( 'gdpr', true ) ) {
-                    $res['sendspam'] = 1;
-                } else {
-                    $res['sendspam'] = 0;
-                }
-                return $res;
-            default:
-                return false;
-        }
+        $this->titles['Dashboard Widget'] = array(
+            'title' => esc_html__( 'Dashboard Widget', 'fullworks-anti-spam' ),
+            'tip'   => esc_html__( 'Display spam protection status and statistics on the WordPress dashboard. Shows protection coverage for installed form systems and recent spam blocking activity.', 'fullworks-anti-spam' ),
+        );
+        return $this->titles;
     }
 
     public function plugin_action_links() {
@@ -174,7 +377,7 @@ class Admin_Settings extends Admin_Pages {
     }
 
     public function add_plugin_action_links( $links ) {
-        $links = array_merge( array('<a href="' . esc_url( admin_url( 'options-general.php?page=fullworks-anti-spam-settings' ) ) . '">' . __( 'Settings' ) . '</a>'), $links );
+        $links = array_merge( array('<a href="' . esc_url( admin_url( 'options-general.php?page=fullworks-anti-spam-settings' ) ) . '">' . __( 'Settings', 'fullworks-anti-spam' ) . '</a>'), $links );
         return $links;
     }
 
@@ -345,18 +548,6 @@ class Admin_Settings extends Admin_Pages {
         );
     }
 
-    private function upgrade_prompt( $cta ) {
-        ?>
-        <a href="<?php 
-        esc_url( admin_url( 'options-general.php?page=fullworks-anti-spam-settings-pricing' ) );
-        ?>">
-			<?php 
-        echo esc_html( $cta );
-        ?>
-        </a>&nbsp;
-		<?php 
-    }
-
     private function add_meta_box(
         $id,
         $title,
@@ -399,6 +590,9 @@ class Admin_Settings extends Admin_Pages {
         if ( !isset( $settings['sendspam'] ) ) {
             $settings['sendspam'] = 0;
         }
+        if ( !isset( $settings['show_dashboard_widget'] ) ) {
+            $settings['show_dashboard_widget'] = 0;
+        }
         return $settings;
     }
 
@@ -436,6 +630,40 @@ class Admin_Settings extends Admin_Pages {
         ?>
             </tbody>
         </table>
+		<?php 
+    }
+
+    public function meta_box_diagnostics() {
+        $enabled = ( isset( $this->options['diagnostics_enabled'] ) ? $this->options['diagnostics_enabled'] : 0 );
+        ?>
+        <p>
+            <label>
+                <input type="checkbox"
+                       name="fullworks-anti-spam[diagnostics_enabled]"
+                       value="1"
+                       <?php 
+        checked( 1, $enabled );
+        ?>>
+				<?php 
+        esc_html_e( 'Enable', 'fullworks-anti-spam' );
+        ?>
+            </label>
+        </p>
+		<?php 
+        if ( $enabled ) {
+            ?>
+            <p>
+                <a href="<?php 
+            echo esc_url( admin_url( 'admin.php?page=fullworks-anti-spam-diagnostics' ) );
+            ?>">
+					<?php 
+            esc_html_e( 'View Diagnostics', 'fullworks-anti-spam' );
+            ?> →
+                </a>
+            </p>
+		<?php 
+        }
+        ?>
 		<?php 
     }
 
@@ -479,7 +707,27 @@ class Admin_Settings extends Admin_Pages {
         ?>
                         >
 						<?php 
-        $msg = '<a  href="' . esc_url( $this->freemius->get_trial_url() ) . '">' . esc_html__( 'Activate the FREE trial', 'fullworks-anti-spam' ) . '</a> ' . esc_html__( 'to enable bot spam protection for forms input', 'fullworks-anti-spam' );
+        // Build message showing current protection status
+        if ( $this->freemius->is__premium_only() && $this->freemius->can_use_premium_code() ) {
+            // Premium users: Simple enable message
+            $msg = esc_html__( 'Enable bot spam protection for forms input', 'fullworks-anti-spam' );
+        } else {
+            // Free users: Show which forms have bot protection and upgrade option
+            // Get forms with free bot protection dynamically (protection_level = 1)
+            $forms_with_free_bot_protection = Forms_Registrations::get_installed_form_names_by_protection_level( 1 );
+            if ( !empty( $forms_with_free_bot_protection ) ) {
+                $msg = sprintf( 
+                    /* translators: %s: comma-separated list of form names */
+                    esc_html__( 'Bot protection enabled for %s.', 'fullworks-anti-spam' ),
+                    implode( ', ', $forms_with_free_bot_protection )
+                 );
+                $msg .= ' <a href="' . esc_url( $this->freemius->get_trial_url() ) . '">' . esc_html__( 'Activate the FREE trial', 'fullworks-anti-spam' ) . '</a> ';
+                $msg .= esc_html__( 'for full protection (human spam + IP blocklist) on all forms', 'fullworks-anti-spam' );
+            } else {
+                $msg = '<a href="' . esc_url( $this->freemius->get_trial_url() ) . '">' . esc_html__( 'Activate the FREE trial', 'fullworks-anti-spam' ) . '</a> ';
+                $msg .= esc_html__( 'to enable bot spam protection for forms input', 'fullworks-anti-spam' );
+            }
+        }
         echo wp_kses_post( $msg );
         ?>
                     </label>
@@ -497,7 +745,8 @@ class Admin_Settings extends Admin_Pages {
         ?>
         <th scope="row">
 			<?php 
-        echo wp_kses_post( $this->titles[$title]['title'] );
+        $titles = $this->get_titles();
+        echo wp_kses_post( $titles[$title]['title'] );
         ?>
         </th>
 		<?php 
@@ -507,7 +756,8 @@ class Admin_Settings extends Admin_Pages {
         ?>
         <td class="help-tip__td">
 			<?php 
-        echo ( isset( $this->titles[$title]['tip'] ) ? '<div class="help-tip"><p>' . esc_html( $this->titles[$title]['tip'] ) . '</p></div>' : '' );
+        $titles = $this->get_titles();
+        echo ( isset( $titles[$title]['tip'] ) ? '<div class="help-tip"><p>' . esc_html( $titles[$title]['tip'] ) . '</p></div>' : '' );
         ?>
         </td>
 		<?php 
@@ -754,6 +1004,7 @@ class Admin_Settings extends Admin_Pages {
     }
 
     public function meta_box_send_spam() {
+        $sendspam_value = ( isset( $this->options['sendspam'] ) ? $this->options['sendspam'] : 0 );
         ?>
         <table class="form-table">
             <tbody>
@@ -767,7 +1018,7 @@ class Admin_Settings extends Admin_Pages {
                                                                       id="fullworks-anti-spam[sendspam]"
                                                                       value="1"
 							<?php 
-        checked( '1', $this->options['sendspam'] );
+        checked( '1', $sendspam_value );
         ?>><?php 
         esc_html_e( 'Allow transmission of visitor messages to Fullworks for spam classification by AI and Machine Learning Analysis', 'fullworks-anti-spam' );
         ?>
@@ -811,6 +1062,58 @@ class Admin_Settings extends Admin_Pages {
         ?>
         </tr>
 		<?php 
+        ?>
+        <tr>
+			<?php 
+        $this->display_th( 'Dashboard Widget' );
+        ?>
+                <td>
+                    <label for="fullworks-anti-spam[show_dashboard_widget]"><input type="checkbox"
+                                                                                    name="fullworks-anti-spam[show_dashboard_widget]"
+                                                                                    id="fullworks-anti-spam[show_dashboard_widget]"
+                                                                                    value="1"
+						<?php 
+        checked( '1', $this->options['show_dashboard_widget'] );
+        ?>>
+						<?php 
+        esc_html_e( 'Show spam stats in dashboard', 'fullworks-anti-spam' );
+        ?>
+                    </label>
+                </td>
+				<?php 
+        $this->display_tip( 'Dashboard Widget' );
+        ?>
+            </tr>
+			<?php 
+        if ( !$this->freemius->can_use_premium_code() ) {
+            ?>
+                <tr>
+					<?php 
+            $this->display_th( 'Spam Stats Free' );
+            ?>
+                    <td>
+                        <a href="<?php 
+            echo esc_url( $this->freemius->get_trial_url() );
+            ?>">
+							<?php 
+            esc_html_e( 'Activate the FREE trial', 'fullworks-anti-spam' );
+            ?>
+                        </a>
+						<?php 
+            esc_html_e( 'for spam statistics auto reporting by email', 'fullworks-anti-spam' );
+            ?>
+                    </td>
+					<?php 
+            $this->display_tip( 'Spam Stats Free' );
+            ?>
+                </tr>
+				<?php 
+        }
+        ?>
+
+            </tbody>
+            </table>
+			<?php 
     }
 
 }
