@@ -33,6 +33,8 @@ use Fullworks_Anti_Spam\Admin\Admin_Email_View;
 use Fullworks_Anti_Spam\Admin\Admin_Settings;
 use Fullworks_Anti_Spam\Admin\Admin_Table_Allow_Deny;
 use Fullworks_Anti_Spam\Admin\Admin_Table_Email_Log;
+use Fullworks_Anti_Spam\Admin\Admin_Table_Quarantine;
+use Fullworks_Anti_Spam\Admin\Admin_Quarantine_View;
 use Fullworks_Anti_Spam\Admin\Mark_Spam;
 use Fullworks_Anti_Spam\Anti_Spam_Api;
 use Fullworks_Anti_Spam\Core\Email_Log;
@@ -113,6 +115,9 @@ class Core {
         // set  cron - do it here rather than activator to cover multi sites
         if ( false === $this->options ) {
             add_option( 'fullworks-anti-spam', Admin_Settings::option_defaults( 'fullworks-anti-spam' ) );
+            // New installs enforce GDPR non-transmission (the remote Fullworks server is being retired).
+            // Existing installs never get this flag, so their behaviour and options are unchanged.
+            add_option( 'fullworks_anti_spam_force_no_transmission', 1 );
         } else {
             if ( !isset( $this->options['freemius_state_set'] ) || !$this->options['freemius_state_set'] ) {
                 if ( $this->freemius->is_anonymous() ) {
@@ -122,7 +127,7 @@ class Core {
                 }
             }
             if ( !isset( $this->options['sendspam'] ) ) {
-                if ( $this->freemius->is_anonymous() && $this->freemius->is_plan_or_trial( 'gdpr', true ) ) {
+                if ( get_option( 'fullworks_anti_spam_force_no_transmission' ) || $this->freemius->is_anonymous() && $this->freemius->is_plan_or_trial( 'gdpr', true ) ) {
                     $this->options['sendspam'] = 0;
                 } else {
                     $this->options['sendspam'] = 1;
@@ -165,6 +170,9 @@ class Core {
             3
         );
         add_action( 'admin_menu', array($allow_deny, 'add_table_page') );
+        add_action( 'init', function () {
+        } );
+        // Quarantine / Audit Admin (premium, always available — no email_log precondition)
         add_action( 'init', function () {
         } );
         // Diagnostics Admin
