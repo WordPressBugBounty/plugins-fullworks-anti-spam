@@ -28,7 +28,7 @@
  * Plugin Name:       Anti-Spam Protection – No API Key, GDPR Friendly
  * Plugin URI:        https://fullworksplugins.com/products/anti-spam/
  * Description:       Stop spam on Contact Form 7, WPForms, Jetpack forms & comments. Actually FREE for business use (unlike Akismet). No CAPTCHA needed, works instantly.
- * Version:           3.0.2
+ * Version:           3.1.0
  * Author:            Fullworks
  * Author URI:        https://fullworksplugins.com/
  * Requires at least: 5.3.0
@@ -57,6 +57,19 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+/*
+ * The other copy (free or Pro) is already loaded. Hand over to Freemius,
+ * which deactivates the free one, and stop before defining anything --
+ * running on would redefine every constant below and print the warnings
+ * as unexpected output during activation.
+ */
+global $fwas_fs;
+if ( isset( $fwas_fs ) && function_exists( 'Fullworks_Anti_Spam\run_fullworks_anti_spam' ) ) {
+	$fwas_fs->set_basename( true, __FILE__ );
+
+	return;
+}
+
 define( 'FULLWORKS_ANTI_SPAM_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'FULLWORKS_ANTI_SPAM_CONTENT_DIR', dirname( plugin_dir_path( __DIR__ ) ) );
 define( 'FULLWORKS_ANTI_SPAM_PLUGINS_TOP_DIR', plugin_dir_path( __DIR__ ) );
@@ -64,7 +77,7 @@ define( 'FULLWORKS_ANTI_SPAM_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 define( 'FULLWORKS_ANTI_SPAM_PLUGIN_NAME', 'fullworks-anti-spam' );
 define( 'FULLWORKS_ANTI_SPAM_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
-define( 'FULLWORKS_ANTI_SPAM_PLUGIN_VERSION', '3.0.2' );
+define( 'FULLWORKS_ANTI_SPAM_PLUGIN_VERSION', '3.1.0' );
 
 /**
  * Debug helper to trace early translation loading (WP 6.7+)
@@ -134,7 +147,7 @@ if ( ! function_exists( 'Fullworks_Anti_Spam\run_fullworks_anti_spam' ) ) {
 			6
 		);
 		register_deactivation_hook( __FILE__, array( '\Fullworks_Anti_Spam\Control\Deactivator', 'deactivate' ) );
-		add_filter( 'wpmu_drop_tables', array( '\Fullworks_Anti_Spam\Control\Deactivator', 'on_delete_blog_tables' ) );
+		add_filter( 'wpmu_drop_tables', array( '\Fullworks_Anti_Spam\Control\Deactivator', 'on_delete_blog_tables' ), 10, 2 );
 		$fwas_fs->add_action( 'after_uninstall', array( '\Fullworks_Anti_Spam\Control\Uninstall', 'uninstall' ) );
 		$plugin = new Core( $fwas_fs );
 		add_action(
@@ -149,7 +162,5 @@ if ( ! function_exists( 'Fullworks_Anti_Spam\run_fullworks_anti_spam' ) ) {
 
 	run_fullworks_anti_spam();
 
-} else {
-	$fwas_fs->set_basename( true, __FILE__ );
 }
 

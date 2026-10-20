@@ -62,7 +62,6 @@ class Purge {
     public function __construct( $plugin_name, $version ) {
         $this->plugin_name = $plugin_name;
         $this->version = $version;
-        add_action( 'fwas_purge_daily', array(__CLASS__, 'purge_email_and_spam_log__premium_only') );
         // Defer form registration callback setup until init to avoid early translation loading
         add_action( 'init', array($this, 'register_purge_callbacks') );
     }
@@ -90,10 +89,12 @@ class Purge {
             do_action( 'fwas_purge_daily' );
         }
         $this->purge_local_logs();
-        // Quarantine / Audit: hardcoded 30-day retention (premium table only).
-        if ( class_exists( '\\Fullworks_Anti_Spam\\Core\\Quarantine' ) ) {
-            \Fullworks_Anti_Spam\Core\Quarantine::purge();
-        }
+        /*
+         * Quarantine / Audit: hardcoded 30-day retention (premium table only).
+         * Gated on the build, not class_exists(), which sent the autoloader
+         * looking for a file the free build does not have and logged the miss.
+         */
+        global $fwas_fs;
         $l = ini_get( 'max_execution_time' );
         if ( $l ) {
             set_time_limit( $l );

@@ -33,6 +33,7 @@ namespace Fullworks_Anti_Spam\Admin;
 if ( !defined( 'ABSPATH' ) ) {
     exit;
 }
+use Fullworks_Anti_Spam\Core\Training_Data;
 use Fullworks_Anti_Spam\Core\Utilities;
 /**
  * Class Admin
